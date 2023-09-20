@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="pt=br">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <link rel="stylesheet" href="style.css" />
+    <title>CRUD</title>
+  </head>
+  <body>
+    <div class="container">
+      <h1>Árvore de Itens</h1>
+      <div class="form">
+        <h2>Adicionar Item</h2>
+        <form id="addItemForm">
+          <input type="text" id="itemName" placeholder="Nome do Item" />
+          <select id="parentItem">
+            <option value="">Selecione o Pai (opcional)</option>
+          </select>
+          <button type="submit">Adicionar</button>
+        </form>
+      </div>
+      <div class="tree">
+        <h2>Árvore</h2>
+        <ul id="tree"></ul>
+      </div>
+    </div>
+    <script src="main.js"></script>
+  </body>
+</html>
