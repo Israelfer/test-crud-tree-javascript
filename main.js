@@ -10,6 +10,7 @@ function createItem(itemName, parentItemId) {
   existingItems.push(newItem);
 
   localStorage.setItem("items", JSON.stringify(existingItems));
+
   readTree();
   updateParentSelect();
 }
@@ -100,6 +101,10 @@ document.getElementById("addItemForm").addEventListener("submit", function (e) {
   e.preventDefault();
   const itemName = document.getElementById("itemName").value;
   const parentItem = document.getElementById("parentItem").value;
+
+  const itemNameInput = document.getElementById("itemName");
+
+  itemNameInput.value = "";
 
   createItem(itemName, parentItem);
 });
