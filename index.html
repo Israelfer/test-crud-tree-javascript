@@ -10,13 +10,19 @@
   <body>
     <div class="container">
       <h1>Árvore de Itens</h1>
-      <form action="">
-        <input type="text" id="item-input" placeholder="Novo item" />
-        <select id="parent-select">
-          <option value="">Selecione um pai (opcional)</option>
-        </select>
-        <button onclick="addItem()">Adicionar</button>
-      </form>
+      <div class="form">
+        <form>
+          <input type="text" id="item-input" placeholder="Novo item" />
+          <select id="parent-select">
+            <option value="">Selecione um pai (opcional)</option>
+          </select>
+          <button onclick="addItem()">Adicionar</button>
+        </form>
+        <p>
+          Adicione um novo item, adicione como um item-filho, edite o nome, e
+          exclua da lista abaixo.
+        </p>
+      </div>
       <div id="item-list"></div>
     </div>
     <script src="main.js"></script>

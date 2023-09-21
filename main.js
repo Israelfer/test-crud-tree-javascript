@@ -4,20 +4,24 @@ function addItem() {
   const itemName = itemInput.value.trim();
 
   const parentSelect = document.getElementById("parent-select");
-  const selectedParentIndex = parentSelect.selectedIndex;
+  const selectedParentValue = parentSelect.value;
 
   if (itemName) {
     const newItem = {
       name: itemName,
+      checked: false,
       children: [],
     };
 
     const itemList = JSON.parse(localStorage.getItem("itemList")) || [];
 
-    if (selectedParentIndex > 0) {
-      // Adicionar como filho do item selecionado no select
-      const selectedParent = itemList[selectedParentIndex - 1];
-      selectedParent.children.push(newItem);
+    if (selectedParentValue !== "") {
+      // Encontre o item pai com base no valor selecionado no select
+      const selectedParent = findItemByValue(itemList, selectedParentValue);
+
+      if (selectedParent) {
+        selectedParent.children.push(newItem);
+      }
     } else {
       // Adicionar como um item principal
       itemList.push(newItem);
@@ -27,9 +31,76 @@ function addItem() {
 
     itemInput.value = "";
     displayItems();
+    displayItemsInSelect(); // Atualize as opções do select
   }
 }
 
+// Função para encontrar um item com base no valor do select
+function findItemByValue(items, value) {
+  const indices = value.split("-").map((index) => parseInt(index));
+
+  let currentItem = items;
+  for (const index of indices) {
+    currentItem = currentItem[index].children;
+  }
+
+  return currentItem.length > 0 ? currentItem[0] : null;
+}
+
+// Função para editar o nome de um item
+function editItemName(index) {
+  const itemList = JSON.parse(localStorage.getItem("itemList")) || [];
+  const newName = prompt(
+    "Digite o novo nome para o item:",
+    itemList[index].name
+  );
+
+  if (newName !== null) {
+    itemList[index].name = newName;
+    localStorage.setItem("itemList", JSON.stringify(itemList));
+    displayItems();
+    displayItemsInSelect(); // Atualize as opções do select
+  }
+}
+
+// Função para excluir um item
+function deleteItem(index) {
+  const itemList = JSON.parse(localStorage.getItem("itemList")) || [];
+  itemList.splice(index, 1);
+  localStorage.setItem("itemList", JSON.stringify(itemList));
+  displayItems();
+  displayItemsInSelect(); // Atualize as opções do select
+}
+
+// Função para exibir os itens no select (incluindo itens filhos)
+function displayItemsInSelect() {
+  const itemList = JSON.parse(localStorage.getItem("itemList")) || [];
+  const parentSelect = document.getElementById("parent-select");
+
+  // Limpe todas as opções existentes
+  parentSelect.innerHTML =
+    '<option value="">Selecione um pai (opcional)</option>';
+
+  // Função recursiva para percorrer os itens e adicionar como opções no select
+  function addItemsToSelect(items, prefix = "") {
+    items.forEach((item, index) => {
+      const itemName = prefix + item.name;
+
+      const option = document.createElement("option");
+      option.value = `${prefix}${index}`;
+      option.textContent = itemName;
+      parentSelect.appendChild(option);
+
+      if (item.children && item.children.length > 0) {
+        addItemsToSelect(item.children, `${prefix}${index}-`);
+      }
+    });
+  }
+
+  addItemsToSelect(itemList);
+}
+
+// Função para exibir os itens na página
 function displayItems() {
   const itemList = JSON.parse(localStorage.getItem("itemList")) || [];
   const itemListContainer = document.getElementById("item-list");
@@ -40,29 +111,25 @@ function displayItems() {
     '<option value="">Selecione um pai (opcional)</option>';
 
   // Função para criar elementos HTML para um item
-  function createItemElement(item, index, isChild = false) {
+  function createItemElement(item, index = false) {
     const itemDiv = document.createElement("div");
-    itemDiv.innerHTML = `
-          <input type="checkbox" id="item-${index}" onchange="updateItem(${index})" ${
-      item.checked ? "checked" : ""
-    }>
-          <label for="item-${index}">${item.name}</label>
-          <button onclick="deleteItem(${index})">Excluir</button>
-          <button onclick="editItemName(${index})">Editar</button> <!-- Botão de edição -->
-      `;
+    const isChecked = item.checked;
 
-    // Adicione uma margem à esquerda de 15px se o item for um filho
-    if (isChild) {
-      itemDiv.style.marginLeft = "15px";
-    }
+    itemDiv.innerHTML = `
+        <label class="checkbox-wrapper">
+            <input type="checkbox" id="item-${index}"
+            onchange="updateItem(${index})" ${isChecked ? "checked" : ""}>
+            ${item.name}
+        </label>
+        <button onclick="editItemName(${index})" class="btnEdit">Editar</button>
+        <button onclick="deleteItem(${index})">Excluir</button>
+      `;
 
     itemListContainer.appendChild(itemDiv);
 
-    // Verifica se o item tem filhos
     if (item.children && item.children.length > 0) {
       const childrenList = document.createElement("ul");
 
-      // Remova a lista de marcadores (bullets) dos itens filhos
       childrenList.style.listStyleType = "none";
 
       item.children.forEach((child, childIndex) => {
@@ -76,7 +143,6 @@ function displayItems() {
         childrenList.appendChild(childListItem);
       });
 
-      // Defina a margem esquerda para a lista de filhos
       childrenList.style.marginLeft = "15px";
 
       itemDiv.appendChild(childrenList);
@@ -86,24 +152,16 @@ function displayItems() {
   }
 
   itemList.forEach((item, index) => {
-    // Adicione as opções ao select com base nos itens existentes
-    const option = document.createElement("option");
-    option.value = index.toString();
-    option.textContent = item.name;
-    parentSelect.appendChild(option);
-
     // Crie os elementos HTML para cada item
     const itemElement = createItemElement(item, index);
   });
 }
 
+// Função para atualizar um item
 function updateItem(index) {
   const itemList = JSON.parse(localStorage.getItem("itemList")) || [];
   const itemCheckbox = document.getElementById(`item-${index}`);
-  const item = itemList[index];
-
-  // Atualize a seleção do item
-  item.checked = itemCheckbox.checked;
+  itemList[index].checked = itemCheckbox.checked;
 
   // Atualize a seleção dos itens filhos
   updateChildrenSelection(itemList, index, itemCheckbox.checked);
@@ -111,6 +169,7 @@ function updateItem(index) {
   localStorage.setItem("itemList", JSON.stringify(itemList));
 }
 
+// Função para atualizar a seleção dos itens filhos
 function updateChildrenSelection(itemList, parentIndex, checked) {
   const parentItem = itemList[parentIndex];
 
@@ -133,27 +192,6 @@ function updateChildrenSelection(itemList, parentIndex, checked) {
   }
 }
 
-function editItemName(index) {
-  const itemList = JSON.parse(localStorage.getItem("itemList")) || [];
-  const newName = prompt(
-    "Digite o novo nome para o item:",
-    itemList[index].name
-  );
-
-  if (newName !== null) {
-    itemList[index].name = newName;
-    localStorage.setItem("itemList", JSON.stringify(itemList));
-    displayItems();
-  }
-}
-
-// Função para excluir um item
-function deleteItem(index) {
-  const itemList = JSON.parse(localStorage.getItem("itemList")) || [];
-  itemList.splice(index, 1);
-  localStorage.setItem("itemList", JSON.stringify(itemList));
-  displayItems();
-}
-
-// Chame a função displayItems para carregar os itens armazenados no Local Storage ao carregar a página
+// Chame a função displayItems e displayItemsInSelect para carregar os itens ao carregar a página
 displayItems();
+displayItemsInSelect();

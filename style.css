@@ -5,7 +5,7 @@
 }
 
 .container {
-  padding: 50px;
+  padding: 25px;
 }
 
 .container h1 {
@@ -23,6 +23,28 @@
   margin: 15px 0;
 }
 
-.tree h2 {
-  margin-bottom: 10px;
+.form input,
+select,
+button {
+  padding: 5px;
+  border-radius: 12px;
+}
+
+button {
+  background-color: black;
+  color: #eeeeee;
+}
+
+button:hover {
+  cursor: pointer;
+  background-color: rgb(27, 27, 27);
+}
+
+.btnEdit {
+  margin: 0 10px 15px 30px;
+}
+
+.btnCrud {
+  width: 50px;
+  padding: 5px;
 }
